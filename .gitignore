@@ -1,0 +1,10 @@
+.DS_Store
+bin/
+/.idea
+.idea
+.env
+.vscode
+tmp/
+
+# Firebase Credentials
+firebase-service-account.json

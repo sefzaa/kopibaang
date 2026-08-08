@@ -1,0 +1,25 @@
+FROM golang:1.26-alpine
+
+# Install git dan dependencies yang dibutuhkan
+RUN apk update && apk add --no-cache git make
+
+# Set working directory
+WORKDIR /app
+
+# Copy go.mod dan go.sum
+COPY go.mod go.sum ./
+RUN go mod download
+
+# Install Air (sekarang bisa pakai latest karena Go sudah v1.26), Migrate, dan Swag
+RUN go install github.com/air-verse/air@latest
+RUN go install -tags 'mysql' github.com/golang-migrate/migrate/v4/cmd/migrate@latest
+RUN go install github.com/swaggo/swag/cmd/swag@latest
+
+# Copy seluruh source code
+COPY . .
+
+# Expose port aplikasi
+EXPOSE 8080
+
+# Jalankan Air
+CMD ["air", "-c", ".air.toml"]

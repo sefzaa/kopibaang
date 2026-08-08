@@ -1,0 +1,9 @@
+DROP TABLE IF EXISTS system_settings;
+DROP TABLE IF EXISTS point_transactions;
+DROP TABLE IF EXISTS order_items;
+DROP TABLE IF EXISTS orders;
+DROP TABLE IF EXISTS raw_materials;
+DROP TABLE IF EXISTS ingredients;
+DROP TABLE IF EXISTS products;
+DROP TABLE IF EXISTS vouchers;
+DROP TABLE IF EXISTS users;

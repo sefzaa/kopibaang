@@ -1,0 +1,1259 @@
+definitions:
+  dto.BaristaStatusRequest:
+    properties:
+      is_available:
+        description: Pakai pointer agar nilai false bisa tervalidasi
+        type: boolean
+    required:
+    - is_available
+    type: object
+  dto.BaristaStatusResponse:
+    properties:
+      is_available:
+        type: boolean
+      status_text:
+        type: string
+    type: object
+  dto.BaseResponse:
+    properties:
+      code:
+        type: integer
+      data: {}
+      errors: {}
+      message:
+        type: string
+    type: object
+  dto.CreateOrderRequest:
+    properties:
+      discount:
+        minimum: 0
+        type: integer
+      is_redeem:
+        type: boolean
+      items:
+        items:
+          $ref: '#/definitions/dto.OrderItemRequest'
+        minItems: 1
+        type: array
+      order_voucher_code:
+        type: string
+      redeem_token:
+        description: Wajib diisi jika IsRedeem true
+        type: string
+      send_email_to:
+        description: Opsional
+        type: string
+    required:
+    - items
+    type: object
+  dto.CreateOrderResponse:
+    properties:
+      earn_point_token:
+        description: QR Code untuk user scan
+        type: string
+      final_amount:
+        type: integer
+      order_id:
+        type: string
+      receipt_text:
+        description: Teks untuk dilempar ke WA via Flutter
+        type: string
+    type: object
+  dto.CustomPushRequest:
+    properties:
+      body:
+        type: string
+      title:
+        type: string
+    required:
+    - body
+    - title
+    type: object
+  dto.DashboardResponse:
+    properties:
+      menu_stats:
+        items:
+          $ref: '#/definitions/dto.MenuStatResponse'
+        type: array
+      total_orders:
+        type: integer
+      total_points_redeemed:
+        type: integer
+      total_sales:
+        type: integer
+    type: object
+  dto.ForgotPasswordRequest:
+    properties:
+      email:
+        type: string
+    required:
+    - email
+    type: object
+  dto.IngredientRequest:
+    properties:
+      grammage:
+        type: string
+      name:
+        type: string
+    required:
+    - grammage
+    - name
+    type: object
+  dto.IngredientResponse:
+    properties:
+      grammage:
+        type: string
+      id:
+        type: string
+      name:
+        type: string
+    type: object
+  dto.LoginRequest:
+    properties:
+      email:
+        type: string
+      password:
+        type: string
+    required:
+    - email
+    - password
+    type: object
+  dto.LogoutRequest:
+    properties:
+      refresh_token:
+        type: string
+    required:
+    - refresh_token
+    type: object
+  dto.MenuStatResponse:
+    properties:
+      product_name:
+        type: string
+      total_sold:
+        type: integer
+    type: object
+  dto.OrderItemRequest:
+    properties:
+      product_id:
+        type: string
+      quantity:
+        minimum: 1
+        type: integer
+    required:
+    - product_id
+    - quantity
+    type: object
+  dto.ProductRequest:
+    properties:
+      description:
+        type: string
+      discount:
+        minimum: 0
+        type: integer
+      image_url:
+        type: string
+      image_urls:
+        items:
+          type: string
+        type: array
+      ingredients:
+        items:
+          $ref: '#/definitions/dto.IngredientRequest'
+        type: array
+      is_active:
+        type: boolean
+      name:
+        type: string
+      price:
+        minimum: 0
+        type: integer
+      volume:
+        type: string
+      voucher_id:
+        description: 'Optional: ID Voucher jika ada'
+        type: string
+    required:
+    - ingredients
+    - is_active
+    - name
+    - price
+    - volume
+    type: object
+  dto.ProductResponse:
+    properties:
+      description:
+        type: string
+      discount:
+        type: integer
+      final_price:
+        description: 'Otomatis: Price - Discount - VoucherDiscount'
+        type: integer
+      id:
+        type: string
+      image_url:
+        type: string
+      image_urls:
+        description: TAMBAHKAN INI
+        items:
+          type: string
+        type: array
+      ingredients:
+        items:
+          $ref: '#/definitions/dto.IngredientResponse'
+        type: array
+      is_active:
+        type: boolean
+      name:
+        type: string
+      price:
+        type: integer
+      volume:
+        type: string
+      voucher_code:
+        type: string
+      voucher_discount:
+        description: Potongan dari voucher per menu
+        type: integer
+      voucher_id:
+        type: string
+    type: object
+  dto.RawMaterialRequest:
+    properties:
+      name:
+        type: string
+      price:
+        minimum: 0
+        type: integer
+      quantity:
+        minimum: 0
+        type: number
+      source:
+        type: string
+      unit:
+        type: string
+    required:
+    - name
+    - price
+    - quantity
+    - unit
+    type: object
+  dto.RawMaterialResponse:
+    properties:
+      created_at:
+        type: string
+      id:
+        type: string
+      name:
+        type: string
+      price:
+        type: integer
+      quantity:
+        type: number
+      source:
+        type: string
+      unit:
+        type: string
+    type: object
+  dto.RedeemQRResponse:
+    properties:
+      redeem_token:
+        type: string
+    type: object
+  dto.RefreshTokenRequest:
+    properties:
+      refresh_token:
+        type: string
+    required:
+    - refresh_token
+    type: object
+  dto.RegisterRequest:
+    properties:
+      email:
+        type: string
+      name:
+        type: string
+      password:
+        minLength: 6
+        type: string
+      rewrite_password:
+        type: string
+      username:
+        type: string
+    required:
+    - email
+    - name
+    - password
+    - rewrite_password
+    - username
+    type: object
+  dto.ResetPasswordRequest:
+    properties:
+      email:
+        type: string
+      new_password:
+        minLength: 6
+        type: string
+      reset_token:
+        type: string
+      rewrite_password:
+        type: string
+    required:
+    - email
+    - new_password
+    - reset_token
+    - rewrite_password
+    type: object
+  dto.ScanEarnPointRequest:
+    properties:
+      earn_token:
+        type: string
+    required:
+    - earn_token
+    type: object
+  dto.TokenResponse:
+    properties:
+      access_token:
+        type: string
+      refresh_token:
+        type: string
+      role:
+        type: string
+    type: object
+  dto.UpdateProfileRequest:
+    properties:
+      name:
+        type: string
+      username:
+        type: string
+    required:
+    - name
+    - username
+    type: object
+  dto.UserProfileResponse:
+    properties:
+      email:
+        description: SUDAH DITAMBAHKAN
+        type: string
+      id:
+        type: string
+      name:
+        type: string
+      points:
+        type: integer
+      role:
+        type: string
+      username:
+        type: string
+    type: object
+  dto.VerifyOTPRequest:
+    properties:
+      email:
+        type: string
+      otp:
+        type: string
+    required:
+    - email
+    - otp
+    type: object
+  dto.VerifyOTPResponse:
+    properties:
+      reset_token:
+        type: string
+    type: object
+  dto.VoucherRequest:
+    properties:
+      code:
+        type: string
+      discount_amount:
+        minimum: 1
+        type: integer
+      end_date:
+        description: 'Format: YYYY-MM-DD'
+        type: string
+      is_active:
+        type: boolean
+      min_purchase:
+        minimum: 0
+        type: integer
+      start_date:
+        description: 'Format: YYYY-MM-DD'
+        type: string
+    required:
+    - code
+    - discount_amount
+    - end_date
+    - is_active
+    - start_date
+    type: object
+  dto.VoucherResponse:
+    properties:
+      code:
+        type: string
+      discount_amount:
+        type: integer
+      end_date:
+        type: string
+      id:
+        type: string
+      is_active:
+        type: boolean
+      min_purchase:
+        type: integer
+      start_date:
+        type: string
+    type: object
+info:
+  contact:
+    email: admin@sefza.com
+    name: Sefza
+  description: API Documentation for Kopibang Coffee Point of Sales & Customer App.
+  termsOfService: http://swagger.io/terms/
+  title: Kopibang Coffee API
+  version: "1.0"
+paths:
+  /api/v1/admin/auth/login:
+    post:
+      consumes:
+      - application/json
+      description: Authenticate a barista and return tokens
+      parameters:
+      - description: Login Credentials
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/dto.LoginRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.BaseResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/dto.TokenResponse'
+              type: object
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/dto.BaseResponse'
+      summary: Admin (Barista) Login
+      tags:
+      - Admin Auth
+  /api/v1/admin/dashboard:
+    get:
+      description: Get dynamic metrics based on time filter (today, yesterday, this_week,
+        this_month, this_year, custom)
+      parameters:
+      - description: 'Time Filter (default: today)'
+        enum:
+        - today
+        - yesterday
+        - this_week
+        - this_month
+        - this_year
+        - custom
+        in: query
+        name: filter
+        type: string
+      - description: Start Date for custom filter (YYYY-MM-DD)
+        in: query
+        name: start_date
+        type: string
+      - description: End Date for custom filter (YYYY-MM-DD)
+        in: query
+        name: end_date
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.BaseResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/dto.DashboardResponse'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/dto.BaseResponse'
+      security:
+      - BearerAuth: []
+      summary: Admin Dashboard Metrics
+      tags:
+      - Admin Dashboard
+  /api/v1/admin/menus:
+    post:
+      consumes:
+      - application/json
+      description: Admin can create a new menu with ingredients
+      parameters:
+      - description: Menu Details
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/dto.ProductRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/dto.BaseResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/dto.BaseResponse'
+      security:
+      - BearerAuth: []
+      summary: Create New Coffee Menu
+      tags:
+      - Admin Menu
+  /api/v1/admin/menus/{id}:
+    delete:
+      description: Admin can delete a menu by ID
+      parameters:
+      - description: Product ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/dto.BaseResponse'
+      security:
+      - BearerAuth: []
+      summary: Delete a Menu
+      tags:
+      - Admin Menu
+    put:
+      consumes:
+      - application/json
+      description: Admin can update menu details and ingredients
+      parameters:
+      - description: Product ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Menu Details
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/dto.ProductRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/dto.BaseResponse'
+      security:
+      - BearerAuth: []
+      summary: Update Existing Menu
+      tags:
+      - Admin Menu
+  /api/v1/admin/menus/{id}/status:
+    patch:
+      consumes:
+      - application/json
+      description: Toggle the active status of a menu
+      parameters:
+      - description: Product ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/dto.BaseResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/dto.BaseResponse'
+      summary: Archive or Unarchive a Menu
+      tags:
+      - Menus
+  /api/v1/admin/notifications/push:
+    post:
+      consumes:
+      - application/json
+      description: Admin can send any message to all users
+      parameters:
+      - description: Notification Data
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/dto.CustomPushRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/dto.BaseResponse'
+      security:
+      - BearerAuth: []
+      summary: Send Custom Notification
+      tags:
+      - Admin Notification
+  /api/v1/admin/orders:
+    post:
+      consumes:
+      - application/json
+      description: Creates order, process redeem if any, returns receipt text and
+        Earn QR
+      parameters:
+      - description: Order Details
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/dto.CreateOrderRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.BaseResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/dto.CreateOrderResponse'
+              type: object
+      security:
+      - BearerAuth: []
+      summary: Admin Input Order
+      tags:
+      - Admin Transaction
+  /api/v1/admin/raw-materials:
+    get:
+      description: Fetch all raw material stock lists
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.BaseResponse'
+            - properties:
+                data:
+                  items:
+                    $ref: '#/definitions/dto.RawMaterialResponse'
+                  type: array
+              type: object
+      security:
+      - BearerAuth: []
+      summary: Get All Raw Materials
+      tags:
+      - Admin Raw Material
+    post:
+      consumes:
+      - application/json
+      description: Admin can add new raw material stock
+      parameters:
+      - description: Material Details
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/dto.RawMaterialRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/dto.BaseResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/dto.BaseResponse'
+      security:
+      - BearerAuth: []
+      summary: Add Raw Material
+      tags:
+      - Admin Raw Material
+  /api/v1/admin/raw-materials/{id}:
+    delete:
+      description: Admin can delete a raw material
+      parameters:
+      - description: Material ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/dto.BaseResponse'
+      security:
+      - BearerAuth: []
+      summary: Delete Raw Material
+      tags:
+      - Admin Raw Material
+    put:
+      consumes:
+      - application/json
+      description: Admin can update existing raw material details
+      parameters:
+      - description: Material ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Material Details
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/dto.RawMaterialRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/dto.BaseResponse'
+      security:
+      - BearerAuth: []
+      summary: Update Raw Material
+      tags:
+      - Admin Raw Material
+  /api/v1/admin/settings/barista-status:
+    patch:
+      consumes:
+      - application/json
+      description: Admin toggle to set available (online) or not available (offline)
+      parameters:
+      - description: Availability Status
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/dto.BaristaStatusRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/dto.BaseResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/dto.BaseResponse'
+      security:
+      - BearerAuth: []
+      summary: Update Barista Status
+      tags:
+      - Admin Settings
+  /api/v1/admin/upload:
+    post:
+      consumes:
+      - multipart/form-data
+      description: Admin uploads an image, returns the public URL
+      parameters:
+      - description: Image File
+        in: formData
+        name: file
+        required: true
+        type: file
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/dto.BaseResponse'
+      security:
+      - BearerAuth: []
+      summary: Upload Menu Image to MinIO
+      tags:
+      - Admin Menu
+  /api/v1/admin/vouchers:
+    get:
+      description: Fetch all vouchers for admin management
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.BaseResponse'
+            - properties:
+                data:
+                  items:
+                    $ref: '#/definitions/dto.VoucherResponse'
+                  type: array
+              type: object
+      security:
+      - BearerAuth: []
+      summary: Get All Vouchers
+      tags:
+      - Admin Voucher
+    post:
+      consumes:
+      - application/json
+      description: Admin can create a new discount voucher
+      parameters:
+      - description: Voucher Details
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/dto.VoucherRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/dto.BaseResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/dto.BaseResponse'
+      security:
+      - BearerAuth: []
+      summary: Create Voucher
+      tags:
+      - Admin Voucher
+  /api/v1/admin/vouchers/{id}:
+    delete:
+      description: Admin can delete a voucher
+      parameters:
+      - description: Voucher ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/dto.BaseResponse'
+      security:
+      - BearerAuth: []
+      summary: Delete Voucher
+      tags:
+      - Admin Voucher
+    put:
+      consumes:
+      - application/json
+      description: Admin can update an existing voucher
+      parameters:
+      - description: Voucher ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Voucher Details
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/dto.VoucherRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/dto.BaseResponse'
+      security:
+      - BearerAuth: []
+      summary: Update Voucher
+      tags:
+      - Admin Voucher
+  /api/v1/auth/forgot-password:
+    post:
+      consumes:
+      - application/json
+      description: Sends OTP to registered email
+      parameters:
+      - description: Email address
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/dto.ForgotPasswordRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/dto.BaseResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/dto.BaseResponse'
+      summary: Request Password Reset
+      tags:
+      - Auth
+  /api/v1/auth/login:
+    post:
+      consumes:
+      - application/json
+      description: Authenticate a customer and return tokens
+      parameters:
+      - description: Login Credentials
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/dto.LoginRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.BaseResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/dto.TokenResponse'
+              type: object
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/dto.BaseResponse'
+      summary: Customer Login
+      tags:
+      - Auth
+  /api/v1/auth/logout:
+    post:
+      consumes:
+      - application/json
+      description: Invalidate the refresh token in Redis
+      parameters:
+      - description: Refresh Token
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/dto.LogoutRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/dto.BaseResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/dto.BaseResponse'
+      security:
+      - BearerAuth: []
+      summary: Logout User/Admin
+      tags:
+      - Auth
+  /api/v1/auth/refresh:
+    post:
+      consumes:
+      - application/json
+      description: Get a new access token and refresh token
+      parameters:
+      - description: Refresh Token
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/dto.RefreshTokenRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.BaseResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/dto.TokenResponse'
+              type: object
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/dto.BaseResponse'
+      summary: Refresh Access Token
+      tags:
+      - Auth
+  /api/v1/auth/register:
+    post:
+      consumes:
+      - application/json
+      description: Register without OTP verification
+      parameters:
+      - description: Registration Info
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/dto.RegisterRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/dto.BaseResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/dto.BaseResponse'
+      summary: Register a new customer
+      tags:
+      - Auth
+  /api/v1/auth/reset-password:
+    post:
+      consumes:
+      - application/json
+      description: Submit reset token and new password to reset
+      parameters:
+      - description: Email, Reset Token, and New Password
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/dto.ResetPasswordRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/dto.BaseResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/dto.BaseResponse'
+      summary: Reset Password
+      tags:
+      - Auth
+  /api/v1/auth/verify-otp:
+    post:
+      consumes:
+      - application/json
+      description: Verify OTP sent to email and get reset token
+      parameters:
+      - description: Email and OTP
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/dto.VerifyOTPRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.BaseResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/dto.VerifyOTPResponse'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/dto.BaseResponse'
+      summary: Verify OTP
+      tags:
+      - Auth
+  /api/v1/menus:
+    get:
+      description: User can get all active menus, Admin gets all menus (active & inactive)
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.BaseResponse'
+            - properties:
+                data:
+                  items:
+                    $ref: '#/definitions/dto.ProductResponse'
+                  type: array
+              type: object
+      security:
+      - BearerAuth: []
+      summary: Get All Menus
+      tags:
+      - Menu
+  /api/v1/menus/{id}:
+    get:
+      description: Get specific menu by ID
+      parameters:
+      - description: Product ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.BaseResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/dto.ProductResponse'
+              type: object
+      security:
+      - BearerAuth: []
+      summary: Get Menu Detail
+      tags:
+      - Menu
+  /api/v1/points/redeem-qr:
+    post:
+      description: User generates QR token to show to Admin
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.BaseResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/dto.RedeemQRResponse'
+              type: object
+      security:
+      - BearerAuth: []
+      summary: User Request Redeem QR
+      tags:
+      - User Transaction
+  /api/v1/points/scan-earn:
+    post:
+      consumes:
+      - application/json
+      description: User scans QR generated from POS to earn points
+      parameters:
+      - description: Earn Token
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/dto.ScanEarnPointRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/dto.BaseResponse'
+      security:
+      - BearerAuth: []
+      summary: User Scans Admin's QR
+      tags:
+      - User Transaction
+  /api/v1/profile:
+    get:
+      description: Fetch logged-in user profile details including points
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.BaseResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/dto.UserProfileResponse'
+              type: object
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/dto.BaseResponse'
+      security:
+      - BearerAuth: []
+      summary: Get User Profile
+      tags:
+      - User Profile
+    put:
+      consumes:
+      - application/json
+      description: Update name and username of the logged-in user
+      parameters:
+      - description: Profile Details
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/dto.UpdateProfileRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/dto.BaseResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/dto.BaseResponse'
+      security:
+      - BearerAuth: []
+      summary: Update User Profile
+      tags:
+      - User Profile
+  /api/v1/settings/barista-status:
+    get:
+      description: Customer/User checks if barista is currently available
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.BaseResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/dto.BaristaStatusResponse'
+              type: object
+      summary: Get Barista Status
+      tags:
+      - Settings
+securityDefinitions:
+  BearerAuth:
+    description: Type "Bearer " followed by a space and your JWT token.
+    in: header
+    name: Authorization
+    type: apiKey
+swagger: "2.0"
