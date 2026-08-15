@@ -45,7 +45,7 @@ func (u *ProductUsecase) UploadImageToMinIO(ctx context.Context, fileHeader *mul
 	ext := filepath.Ext(fileHeader.Filename)
 	objectName := fmt.Sprintf("menu/%s-%d%s", uuid.New().String(), time.Now().Unix(), ext)
 
-	// 3. Eksekusi Upload ke MinIO
+// 3. Eksekusi Upload ke MinIO
 	contentType := fileHeader.Header.Get("Content-Type")
 	if contentType == "" {
 		contentType = "application/octet-stream"
@@ -59,13 +59,14 @@ func (u *ProductUsecase) UploadImageToMinIO(ctx context.Context, fileHeader *mul
 	}
 
 	// 4. Bangun Publik URL
-	// Format standar MinIO: http://<endpoint>/<bucket_name>/<object_name>
-	protocol := "http"
-	if u.env.MinioUseSSL == "true" {
-		protocol = "https"
-	}
+	// HAPUS ATAU COMMENT BLOK PROTOCOL DI BAWAH INI:
+	// protocol := "http"
+	// if u.env.MinioUseSSL == "true" {
+	// 	protocol = "https"
+	// }
 	
-	publicURL := fmt.Sprintf("%s://%s/%s/%s", protocol, u.env.MinioEndpoint, bucketName, objectName)
+	// CUKUP TINGGALKAN BARIS INI SAJA:
+	publicURL := fmt.Sprintf("http://72.60.198.166:9005/%s/%s", bucketName, objectName)
 	
 	return publicURL, nil
 }
