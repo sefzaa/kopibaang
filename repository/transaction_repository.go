@@ -45,7 +45,7 @@ func (r *transactionRepository) GetAllOrderHistory(ctx context.Context, start ti
 	}
 
 	offset := (page - 1) * limit
-	err := query.Preload("Items").Order("created_at DESC").Limit(limit).Offset(offset).Find(&orders).Error
+	err := query.Preload("Items.Product").Order("created_at DESC").Limit(limit).Offset(offset).Find(&orders).Error
 
 	return orders, total, err
 }
@@ -62,8 +62,8 @@ func (r *transactionRepository) GetOrderHistoryByUser(ctx context.Context, userI
 	}
 
 	offset := (page - 1) * limit
-	err := query.Preload("Items").Order("created_at DESC").Limit(limit).Offset(offset).Find(&orders).Error
-	
+	err := query.Preload("Items.Product").Order("created_at DESC").Limit(limit).Offset(offset).Find(&orders).Error
+
 	return orders, total, err
 }
 

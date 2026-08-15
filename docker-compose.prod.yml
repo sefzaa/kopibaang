@@ -57,8 +57,8 @@ services:
     container_name: kopibang_minio_prod
     restart: always
     ports:
-      - "127.0.0.1:9005:9000"
-      - "127.0.0.1:9006:9001"
+      - "9005:9000"           # <--- UBAH BARIS INI (Hapus 127.0.0.1:)
+      - "127.0.0.1:9006:9001" # Ini port GUI, biarkan saja
     environment:
       MINIO_ROOT_USER: kopibang
       MINIO_ROOT_PASSWORD: kopibang

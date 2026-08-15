@@ -17,12 +17,14 @@ type Order struct {
 	CreatedAt   time.Time
 }
 
+
 type OrderItem struct {
 	ID          uuid.UUID `gorm:"type:char(36);primary_key"`
 	OrderID     uuid.UUID `gorm:"type:char(36);not null"`
 	ProductID   uuid.UUID `gorm:"type:char(36);not null"`
 	Quantity    int       `gorm:"not null"`
 	PriceAtTime int       `gorm:"not null"`
+	Product     Product   `gorm:"foreignKey:ProductID"` // <--- TAMBAHKAN BARIS INI
 }
 
 type PointTransaction struct {

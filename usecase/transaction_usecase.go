@@ -5,6 +5,8 @@ import (
 	"errors"
 	"fmt"
 	"time"
+	"strconv"
+	"strings"
 
 	"github.com/google/uuid"
 	"kopibang/domain"
@@ -101,9 +103,14 @@ func (u *TransactionUsecase) mapToOrderHistoryResponse(orders []entity.Order, to
 	var orderRes []dto.OrderResponse
 	for _, o := range orders {
 		var items []dto.OrderItemDetailResponse
+		earnedPoints := 0 // Hitung poin (1 qty = 1 poin)
+
 		for _, i := range o.Items {
+			earnedPoints += i.Quantity // Tambahkan quantity ke total poin
+
 			items = append(items, dto.OrderItemDetailResponse{
 				ProductID:   i.ProductID.String(),
+				ProductName: i.Product.Name, // Ambil nama dari relasi
 				Quantity:    i.Quantity,
 				PriceAtTime: i.PriceAtTime,
 			})
@@ -113,15 +120,16 @@ func (u *TransactionUsecase) mapToOrderHistoryResponse(orders []entity.Order, to
 		if o.UserID != nil { userID = o.UserID.String() }
 		
 		orderRes = append(orderRes, dto.OrderResponse{
-			OrderID:     o.ID.String(),
-			UserID:      userID,
-			TotalAmount: o.TotalAmount,
-			Discount:    o.Discount,
-			FinalAmount: o.FinalAmount,
-			IsRedeem:    o.IsRedeem,
-			Status:      o.Status,
-			CreatedAt:   o.CreatedAt,
-			Items:       items,
+			OrderID:      o.ID.String(),
+			UserID:       userID,
+			TotalAmount:  o.TotalAmount,
+			Discount:     o.Discount,
+			FinalAmount:  o.FinalAmount,
+			IsRedeem:     o.IsRedeem,
+			Status:       o.Status,
+			CreatedAt:    o.CreatedAt,
+			EarnedPoints: earnedPoints, // Masukkan poin ke respon JSON
+			Items:        items,
 		})
 	}
 	
@@ -234,8 +242,15 @@ func (u *TransactionUsecase) CreateOrder(ctx context.Context, req dto.CreateOrde
 
 	var earnToken string
 	if !req.IsRedeem {
+		// Hitung total quantity dari order items
+		totalQty := 0
+		for _, item := range req.Items {
+			totalQty += item.Quantity
+		}
+
 		earnToken = uuid.New().String()
-		redisData := fmt.Sprintf("%s|%d", orderID.String(), finalAmount)
+		// Titipkan orderID, finalAmount, dan totalQty ke Redis dipisah tanda |
+		redisData := fmt.Sprintf("%s|%d|%d", orderID.String(), finalAmount, totalQty)
 		_ = u.redisRepo.SaveQRToken(ctx, "earn_qr", earnToken, redisData, 10*time.Minute)
 	}
 
@@ -256,10 +271,17 @@ func (u *TransactionUsecase) GenerateRedeemQR(ctx context.Context, userIDStr str
 func (u *TransactionUsecase) ScanEarnQR(ctx context.Context, userIDStr string, req dto.ScanEarnPointRequest) error {
 	userID, _ := uuid.Parse(userIDStr)
 
-	_, err := u.redisRepo.GetQRTokenData(ctx, "earn_qr", req.EarnToken)
+	redisData, err := u.redisRepo.GetQRTokenData(ctx, "earn_qr", req.EarnToken)
 	if err != nil { return errors.New("QR code expired or invalid") }
 
-	pointsEarned := 20 
+	// Pecah data dari Redis (orderID | finalAmount | totalQty)
+	parts := strings.Split(redisData, "|")
+	pointsEarned := 0
+	if len(parts) >= 3 {
+		pointsEarned, _ = strconv.Atoi(parts[2]) // Jadikan totalQty sebagai Poin
+	} else {
+		pointsEarned = 1 // Fallback jaga-jaga kalau error
+	}
 	
 	err = u.txRepo.UpdateUserPoints(ctx, userID, pointsEarned, true)
 	if err != nil { return err }

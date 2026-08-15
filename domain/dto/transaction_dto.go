@@ -48,20 +48,22 @@ type PaginationRequest struct {
 
 type OrderItemDetailResponse struct {
 	ProductID   string `json:"product_id"`
+	ProductName string `json:"product_name"` // <--- TAMBAHAN
 	Quantity    int    `json:"quantity"`
 	PriceAtTime int    `json:"price_at_time"`
 }
 
 type OrderResponse struct {
-	OrderID     string                    `json:"order_id"`
-	UserID      string                    `json:"user_id,omitempty"`
-	TotalAmount int                       `json:"total_amount"`
-	Discount    int                       `json:"discount"`
-	FinalAmount int                       `json:"final_amount"`
-	IsRedeem    bool                      `json:"is_redeem"`
-	Status      string                    `json:"status"`
-	CreatedAt   time.Time                 `json:"created_at"`
-	Items       []OrderItemDetailResponse `json:"items"`
+	OrderID      string                    `json:"order_id"`
+	UserID       string                    `json:"user_id,omitempty"`
+	TotalAmount  int                       `json:"total_amount"`
+	Discount     int                       `json:"discount"`
+	FinalAmount  int                       `json:"final_amount"`
+	IsRedeem     bool                      `json:"is_redeem"`
+	Status       string                    `json:"status"`
+	CreatedAt    time.Time                 `json:"created_at"`
+	EarnedPoints int                       `json:"earned_points"` // <--- TAMBAHAN
+	Items        []OrderItemDetailResponse `json:"items"`
 }
 
 type PaginationMeta struct {
