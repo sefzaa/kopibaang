@@ -3,8 +3,8 @@ package domain
 import (
 	"context"
 	"github.com/google/uuid"
-	"kopibang/domain/entity" // Sesuaikan nama modul
 	"kopibang/domain/dto"
+	"kopibang/domain/entity"
 	"time"
 )
 
@@ -13,7 +13,7 @@ type UserRepository interface {
 	FindByID(ctx context.Context, id uuid.UUID) (*entity.User, error)
 	Create(ctx context.Context, user *entity.User) error
 	UpdatePassword(ctx context.Context, userID uuid.UUID, newPasswordHash string) error
-	Update(ctx context.Context, user *entity.User) error // Tambahan baru
+	Update(ctx context.Context, user *entity.User) error
 }
 
 type RedisRepository interface {
@@ -47,12 +47,16 @@ type ProductRepository interface {
 
 type TransactionRepository interface {
 	CreateOrder(ctx context.Context, order *entity.Order) error
-	GetOrderHistoryByUser(ctx context.Context, userID uuid.UUID) ([]entity.Order, error)
-	GetRedeemHistory(ctx context.Context) ([]entity.Order, error)
 	
+	// Diubah: Ditambahkan Pagination (page & limit)
+	GetOrderHistoryByUser(ctx context.Context, userID uuid.UUID, page int, limit int) ([]entity.Order, int64, error)
+	
+	// Baru: Query filter untuk history Admin 
+	GetAllOrderHistory(ctx context.Context, start time.Time, end time.Time, page int, limit int) ([]entity.Order, int64, error)
+
+	GetRedeemHistory(ctx context.Context) ([]entity.Order, error)
 	RecordPointTransaction(ctx context.Context, pt *entity.PointTransaction) error
 	GetPointHistoryByUser(ctx context.Context, userID uuid.UUID) ([]entity.PointTransaction, error)
-	
 	UpdateUserPoints(ctx context.Context, userID uuid.UUID, points int, isAddition bool) error
 }
 
@@ -75,8 +79,6 @@ type SettingRepository interface {
 	GetSetting(ctx context.Context, key string) (string, error)
 	UpdateSetting(ctx context.Context, key string, value string) error
 }
-
-
 
 type VoucherRepository interface {
 	Create(ctx context.Context, voucher *entity.Voucher) error

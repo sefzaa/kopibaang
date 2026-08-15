@@ -1,0 +1,23 @@
+# Tahap 1: Build
+FROM golang:1.21-alpine AS builder
+WORKDIR /app
+# Copy dependency file
+COPY go.mod go.sum ./
+RUN go mod download
+# Copy seluruh kode
+COPY . .
+# Compile aplikasi Go menjadi single binary bernama 'main'
+RUN CGO_ENABLED=0 GOOS=linux go build -o main .
+
+# Tahap 2: Production Image (Sangat ringan)
+FROM alpine:latest
+WORKDIR /app
+# Install tzdata agar zona waktu Asia/Jakarta berfungsi dengan baik
+RUN apk --no-cache add tzdata
+# Copy binary dari tahap build
+COPY --from=builder /app/main .
+# Copy folder migrasi agar terbaca oleh aplikasi saat dijalankan
+COPY --from=builder /app/database/migrations ./database/migrations
+
+EXPOSE 8080
+CMD ["./main"]
