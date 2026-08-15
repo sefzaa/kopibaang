@@ -27,8 +27,8 @@ services:
     container_name: kopibang_mysql
     restart: always
     environment:
-      MYSQL_ROOT_PASSWORD: secretpassword
-      MYSQL_DATABASE: kopibang_coffee
+      MYSQL_ROOT_PASSWORD: kopibang
+      MYSQL_DATABASE: kopibang
     ports:
       - "3306:3306"
     volumes:
