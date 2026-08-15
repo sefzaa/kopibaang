@@ -393,6 +393,75 @@ const docTemplate = `{
                 }
             }
         },
+        "/api/v1/admin/orders/history": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Fetch order history with date filtering (today, yesterday, this_week, this_month, custom) and pagination",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Admin Transaction"
+                ],
+                "summary": "Admin Get Order History",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Filter type",
+                        "name": "filter",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Start Date YYYY-MM-DD",
+                        "name": "start_date",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "End Date YYYY-MM-DD",
+                        "name": "end_date",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Page number",
+                        "name": "page",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Limit per page",
+                        "name": "limit",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/dto.BaseResponse"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/dto.OrderHistoryResponse"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    }
+                }
+            }
+        },
         "/api/v1/admin/raw-materials": {
             "get": {
                 "security": [
@@ -988,7 +1057,7 @@ const docTemplate = `{
         },
         "/api/v1/auth/register": {
             "post": {
-                "description": "Register without OTP verification",
+                "description": "Register and auto-login customer",
                 "consumes": [
                     "application/json"
                 ],
@@ -1014,7 +1083,19 @@ const docTemplate = `{
                     "201": {
                         "description": "Created",
                         "schema": {
-                            "$ref": "#/definitions/dto.BaseResponse"
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/dto.BaseResponse"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/dto.TokenResponse"
+                                        }
+                                    }
+                                }
+                            ]
                         }
                     },
                     "400": {
@@ -1397,6 +1478,57 @@ const docTemplate = `{
                     }
                 }
             }
+        },
+        "/api/v1/user/orders/history": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Fetch user's order history with pagination",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "User Transaction"
+                ],
+                "summary": "User Get Own Order History",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Page number",
+                        "name": "page",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Limit per page",
+                        "name": "limit",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/dto.BaseResponse"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/dto.OrderHistoryResponse"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    }
+                }
+            }
         }
     },
     "definitions": {
@@ -1457,6 +1589,7 @@ const docTemplate = `{
                     }
                 },
                 "order_voucher_code": {
+                    "description": "Opsional",
                     "type": "string"
                 },
                 "redeem_token": {
@@ -1600,6 +1733,34 @@ const docTemplate = `{
                 }
             }
         },
+        "dto.OrderHistoryResponse": {
+            "type": "object",
+            "properties": {
+                "meta": {
+                    "$ref": "#/definitions/dto.PaginationMeta"
+                },
+                "orders": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/dto.OrderResponse"
+                    }
+                }
+            }
+        },
+        "dto.OrderItemDetailResponse": {
+            "type": "object",
+            "properties": {
+                "price_at_time": {
+                    "type": "integer"
+                },
+                "product_id": {
+                    "type": "string"
+                },
+                "quantity": {
+                    "type": "integer"
+                }
+            }
+        },
         "dto.OrderItemRequest": {
             "type": "object",
             "required": [
@@ -1613,6 +1774,58 @@ const docTemplate = `{
                 "quantity": {
                     "type": "integer",
                     "minimum": 1
+                }
+            }
+        },
+        "dto.OrderResponse": {
+            "type": "object",
+            "properties": {
+                "created_at": {
+                    "type": "string"
+                },
+                "discount": {
+                    "type": "integer"
+                },
+                "final_amount": {
+                    "type": "integer"
+                },
+                "is_redeem": {
+                    "type": "boolean"
+                },
+                "items": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/dto.OrderItemDetailResponse"
+                    }
+                },
+                "order_id": {
+                    "type": "string"
+                },
+                "status": {
+                    "type": "string"
+                },
+                "total_amount": {
+                    "type": "integer"
+                },
+                "user_id": {
+                    "type": "string"
+                }
+            }
+        },
+        "dto.PaginationMeta": {
+            "type": "object",
+            "properties": {
+                "limit": {
+                    "type": "integer"
+                },
+                "page": {
+                    "type": "integer"
+                },
+                "total_items": {
+                    "type": "integer"
+                },
+                "total_pages": {
+                    "type": "integer"
                 }
             }
         },
@@ -1633,10 +1846,8 @@ const docTemplate = `{
                     "type": "integer",
                     "minimum": 0
                 },
-                "image_url": {
-                    "type": "string"
-                },
                 "image_urls": {
+                    "description": "Hanya pakai versi Array",
                     "type": "array",
                     "items": {
                         "type": "string"
@@ -1662,7 +1873,6 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "voucher_id": {
-                    "description": "Optional: ID Voucher jika ada",
                     "type": "string"
                 }
             }
@@ -1677,17 +1887,13 @@ const docTemplate = `{
                     "type": "integer"
                 },
                 "final_price": {
-                    "description": "Otomatis: Price - Discount - VoucherDiscount",
                     "type": "integer"
                 },
                 "id": {
                     "type": "string"
                 },
-                "image_url": {
-                    "type": "string"
-                },
                 "image_urls": {
-                    "description": "TAMBAHKAN INI",
+                    "description": "Hanya pakai versi Array",
                     "type": "array",
                     "items": {
                         "type": "string"
@@ -1715,7 +1921,6 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "voucher_discount": {
-                    "description": "Potongan dari voucher per menu",
                     "type": "integer"
                 },
                 "voucher_id": {
@@ -1942,7 +2147,8 @@ const docTemplate = `{
                 "discount_amount",
                 "end_date",
                 "is_active",
-                "start_date"
+                "start_date",
+                "type"
             ],
             "properties": {
                 "code": {
@@ -1966,6 +2172,14 @@ const docTemplate = `{
                 "start_date": {
                     "description": "Format: YYYY-MM-DD",
                     "type": "string"
+                },
+                "type": {
+                    "description": "TAMBAHAN: Validasi ketat enum",
+                    "type": "string",
+                    "enum": [
+                        "menu_promo",
+                        "cart_discount"
+                    ]
                 }
             }
         },
@@ -1991,6 +2205,10 @@ const docTemplate = `{
                     "type": "integer"
                 },
                 "start_date": {
+                    "type": "string"
+                },
+                "type": {
+                    "description": "TAMBAHAN",
                     "type": "string"
                 }
             }

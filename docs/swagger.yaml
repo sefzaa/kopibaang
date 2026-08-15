@@ -36,6 +36,7 @@ definitions:
         minItems: 1
         type: array
       order_voucher_code:
+        description: Opsional
         type: string
       redeem_token:
         description: Wajib diisi jika IsRedeem true
@@ -132,6 +133,24 @@ definitions:
       total_sold:
         type: integer
     type: object
+  dto.OrderHistoryResponse:
+    properties:
+      meta:
+        $ref: '#/definitions/dto.PaginationMeta'
+      orders:
+        items:
+          $ref: '#/definitions/dto.OrderResponse'
+        type: array
+    type: object
+  dto.OrderItemDetailResponse:
+    properties:
+      price_at_time:
+        type: integer
+      product_id:
+        type: string
+      quantity:
+        type: integer
+    type: object
   dto.OrderItemRequest:
     properties:
       product_id:
@@ -143,6 +162,40 @@ definitions:
     - product_id
     - quantity
     type: object
+  dto.OrderResponse:
+    properties:
+      created_at:
+        type: string
+      discount:
+        type: integer
+      final_amount:
+        type: integer
+      is_redeem:
+        type: boolean
+      items:
+        items:
+          $ref: '#/definitions/dto.OrderItemDetailResponse'
+        type: array
+      order_id:
+        type: string
+      status:
+        type: string
+      total_amount:
+        type: integer
+      user_id:
+        type: string
+    type: object
+  dto.PaginationMeta:
+    properties:
+      limit:
+        type: integer
+      page:
+        type: integer
+      total_items:
+        type: integer
+      total_pages:
+        type: integer
+    type: object
   dto.ProductRequest:
     properties:
       description:
@@ -150,9 +203,8 @@ definitions:
       discount:
         minimum: 0
         type: integer
-      image_url:
-        type: string
       image_urls:
+        description: Hanya pakai versi Array
         items:
           type: string
         type: array
@@ -170,7 +222,6 @@ definitions:
       volume:
         type: string
       voucher_id:
-        description: 'Optional: ID Voucher jika ada'
         type: string
     required:
     - ingredients
@@ -186,14 +237,11 @@ definitions:
       discount:
         type: integer
       final_price:
-        description: 'Otomatis: Price - Discount - VoucherDiscount'
         type: integer
       id:
         type: string
-      image_url:
-        type: string
       image_urls:
-        description: TAMBAHKAN INI
+        description: Hanya pakai versi Array
         items:
           type: string
         type: array
@@ -212,7 +260,6 @@ definitions:
       voucher_code:
         type: string
       voucher_discount:
-        description: Potongan dari voucher per menu
         type: integer
       voucher_id:
         type: string
@@ -378,12 +425,19 @@ definitions:
       start_date:
         description: 'Format: YYYY-MM-DD'
         type: string
+      type:
+        description: 'TAMBAHAN: Validasi ketat enum'
+        enum:
+        - menu_promo
+        - cart_discount
+        type: string
     required:
     - code
     - discount_amount
     - end_date
     - is_active
     - start_date
+    - type
     type: object
   dto.VoucherResponse:
     properties:
@@ -400,6 +454,9 @@ definitions:
       min_purchase:
         type: integer
       start_date:
+        type: string
+      type:
+        description: TAMBAHAN
         type: string
     type: object
 info:
@@ -641,6 +698,48 @@ paths:
       security:
       - BearerAuth: []
       summary: Admin Input Order
+      tags:
+      - Admin Transaction
+  /api/v1/admin/orders/history:
+    get:
+      description: Fetch order history with date filtering (today, yesterday, this_week,
+        this_month, custom) and pagination
+      parameters:
+      - description: Filter type
+        in: query
+        name: filter
+        type: string
+      - description: Start Date YYYY-MM-DD
+        in: query
+        name: start_date
+        type: string
+      - description: End Date YYYY-MM-DD
+        in: query
+        name: end_date
+        type: string
+      - description: Page number
+        in: query
+        name: page
+        type: integer
+      - description: Limit per page
+        in: query
+        name: limit
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.BaseResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/dto.OrderHistoryResponse'
+              type: object
+      security:
+      - BearerAuth: []
+      summary: Admin Get Order History
       tags:
       - Admin Transaction
   /api/v1/admin/raw-materials:
@@ -1010,7 +1109,7 @@ paths:
     post:
       consumes:
       - application/json
-      description: Register without OTP verification
+      description: Register and auto-login customer
       parameters:
       - description: Registration Info
         in: body
@@ -1024,7 +1123,12 @@ paths:
         "201":
           description: Created
           schema:
-            $ref: '#/definitions/dto.BaseResponse'
+            allOf:
+            - $ref: '#/definitions/dto.BaseResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/dto.TokenResponse'
+              type: object
         "400":
           description: Bad Request
           schema:
@@ -1250,6 +1354,35 @@ paths:
       summary: Get Barista Status
       tags:
       - Settings
+  /api/v1/user/orders/history:
+    get:
+      description: Fetch user's order history with pagination
+      parameters:
+      - description: Page number
+        in: query
+        name: page
+        type: integer
+      - description: Limit per page
+        in: query
+        name: limit
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.BaseResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/dto.OrderHistoryResponse'
+              type: object
+      security:
+      - BearerAuth: []
+      summary: User Get Own Order History
+      tags:
+      - User Transaction
 securityDefinitions:
   BearerAuth:
     description: Type "Bearer " followed by a space and your JWT token.

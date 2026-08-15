@@ -93,6 +93,9 @@ func Setup(env *bootstrap.Env, timeout time.Duration, app *bootstrap.Application
 			// Points & Transaction
 			protected.POST("/points/redeem-qr", txController.RequestRedeemQR)
 			protected.POST("/points/scan-earn", txController.ScanEarnQR)
+			
+			// TAMBAHAN: History Order untuk User
+			protected.GET("/user/orders/history", txController.GetUserOrderHistory)
 		}
 
 		// --- 3. ADMIN ROUTES (Hanya Barista) ---
@@ -114,6 +117,9 @@ func Setup(env *bootstrap.Env, timeout time.Duration, app *bootstrap.Application
 
 			// POS / Kasir
 			admin.POST("/orders", txController.CreateOrder)
+			
+			// TAMBAHAN: History Order untuk Admin (dengan fitur filter)
+			admin.GET("/orders/history", txController.GetAdminOrderHistory)
 
 			// CRUD Raw Materials
 			admin.POST("/raw-materials", rawMaterialController.AddMaterial)
