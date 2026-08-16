@@ -1756,6 +1756,10 @@ const docTemplate = `{
                 "product_id": {
                     "type": "string"
                 },
+                "product_name": {
+                    "description": "\u003c--- TAMBAHAN",
+                    "type": "string"
+                },
                 "quantity": {
                     "type": "integer"
                 }
@@ -1784,6 +1788,10 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "discount": {
+                    "type": "integer"
+                },
+                "earned_points": {
+                    "description": "\u003c--- TAMBAHAN",
                     "type": "integer"
                 },
                 "final_amount": {

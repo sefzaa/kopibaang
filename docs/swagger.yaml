@@ -148,6 +148,9 @@ definitions:
         type: integer
       product_id:
         type: string
+      product_name:
+        description: <--- TAMBAHAN
+        type: string
       quantity:
         type: integer
     type: object
@@ -167,6 +170,9 @@ definitions:
       created_at:
         type: string
       discount:
+        type: integer
+      earned_points:
+        description: <--- TAMBAHAN
         type: integer
       final_amount:
         type: integer

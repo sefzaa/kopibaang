@@ -1748,6 +1748,10 @@
                 "product_id": {
                     "type": "string"
                 },
+                "product_name": {
+                    "description": "\u003c--- TAMBAHAN",
+                    "type": "string"
+                },
                 "quantity": {
                     "type": "integer"
                 }
@@ -1776,6 +1780,10 @@
                     "type": "string"
                 },
                 "discount": {
+                    "type": "integer"
+                },
+                "earned_points": {
+                    "description": "\u003c--- TAMBAHAN",
                     "type": "integer"
                 },
                 "final_amount": {
