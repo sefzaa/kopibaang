@@ -26,21 +26,18 @@ func NewTransactionUsecase(txRepo domain.TransactionRepository, productRepo doma
 	return &TransactionUsecase{txRepo, productRepo, voucherRepo, redisRepo}
 }
 
-// ADMIN: Get Order History
 func (u *TransactionUsecase) GetAdminOrderHistory(ctx context.Context, req dto.OrderHistoryQueryRequest) (dto.OrderHistoryResponse, error) {
 	if req.Page <= 0 { req.Page = 1 }
 	if req.Limit <= 0 { req.Limit = 10 }
 
-	// Konfigurasi Zona Waktu St. Petersburg
 	loc, err := time.LoadLocation("Europe/Moscow")
 	if err != nil {
-		loc = time.FixedZone("MSK", 3*3600) // Fallback ke UTC+3 jika tzdata tidak ada di OS server
+		loc = time.FixedZone("MSK", 3*3600) 
 	}
 
 	now := time.Now().In(loc)
 	var start, end time.Time
 
-	// Logika filter tanggal
 	switch req.Filter {
 	case "today":
 		start = time.Date(now.Year(), now.Month(), now.Day(), 0, 0, 0, 0, loc)
@@ -51,13 +48,12 @@ func (u *TransactionUsecase) GetAdminOrderHistory(ctx context.Context, req dto.O
 		end = time.Date(yesterday.Year(), yesterday.Month(), yesterday.Day(), 23, 59, 59, 999999999, loc)
 	case "this_week":
 		weekday := int(now.Weekday())
-		if weekday == 0 { weekday = 7 } // Sesuaikan agar Minggu jadi hari ke-7
+		if weekday == 0 { weekday = 7 } 
 		startOfWeek := now.AddDate(0, 0, -weekday+1)
 		start = time.Date(startOfWeek.Year(), startOfWeek.Month(), startOfWeek.Day(), 0, 0, 0, 0, loc)
 		end = time.Date(now.Year(), now.Month(), now.Day(), 23, 59, 59, 999999999, loc)
 	case "this_month":
 		start = time.Date(now.Year(), now.Month(), 1, 0, 0, 0, 0, loc)
-		// Trick bulan depan tanggal 0 untuk mendapat hari terakhir bulan ini
 		end = time.Date(now.Year(), now.Month()+1, 0, 23, 59, 59, 999999999, loc)
 	case "custom":
 		if req.StartDate == "" || req.EndDate == "" {
@@ -80,7 +76,6 @@ func (u *TransactionUsecase) GetAdminOrderHistory(ctx context.Context, req dto.O
 	return u.mapToOrderHistoryResponse(orders, total, req.Page, req.Limit), nil
 }
 
-// USER: Get Own Order History
 func (u *TransactionUsecase) GetUserOrderHistory(ctx context.Context, userIDStr string, page, limit int) (dto.OrderHistoryResponse, error) {
 	userID, err := uuid.Parse(userIDStr)
 	if err != nil {
@@ -98,19 +93,18 @@ func (u *TransactionUsecase) GetUserOrderHistory(ctx context.Context, userIDStr 
 	return u.mapToOrderHistoryResponse(orders, total, page, limit), nil
 }
 
-// Helper untuk Mapping Entity ke DTO
 func (u *TransactionUsecase) mapToOrderHistoryResponse(orders []entity.Order, total int64, page, limit int) dto.OrderHistoryResponse {
 	var orderRes []dto.OrderResponse
 	for _, o := range orders {
 		var items []dto.OrderItemDetailResponse
-		earnedPoints := 0 // Hitung poin (1 qty = 1 poin)
+		earnedPoints := 0 
 
 		for _, i := range o.Items {
-			earnedPoints += i.Quantity // Tambahkan quantity ke total poin
+			earnedPoints += i.Quantity 
 
 			items = append(items, dto.OrderItemDetailResponse{
 				ProductID:   i.ProductID.String(),
-				ProductName: i.Product.Name, // Ambil nama dari relasi
+				ProductName: i.Product.Name, 
 				Quantity:    i.Quantity,
 				PriceAtTime: i.PriceAtTime,
 			})
@@ -128,13 +122,13 @@ func (u *TransactionUsecase) mapToOrderHistoryResponse(orders []entity.Order, to
 			IsRedeem:     o.IsRedeem,
 			Status:       o.Status,
 			CreatedAt:    o.CreatedAt,
-			EarnedPoints: earnedPoints, // Masukkan poin ke respon JSON
+			EarnedPoints: earnedPoints, 
 			Items:        items,
 		})
 	}
 	
 	if orderRes == nil {
-		orderRes = []dto.OrderResponse{} // Cegah JSON bernilai null, jadi [] kosong
+		orderRes = []dto.OrderResponse{} 
 	}
 
 	totalPages := int((total + int64(limit) - 1) / int64(limit))
@@ -151,7 +145,6 @@ func (u *TransactionUsecase) mapToOrderHistoryResponse(orders []entity.Order, to
 	}
 }
 
-// ADMIN: Input Order
 func (u *TransactionUsecase) CreateOrder(ctx context.Context, req dto.CreateOrderRequest) (dto.CreateOrderResponse, error) {
 	orderID := uuid.New()
 	subtotalAmount := 0
@@ -176,12 +169,9 @@ func (u *TransactionUsecase) CreateOrder(ctx context.Context, req dto.CreateOrde
 		itemPrice := product.Price - product.Discount
 		if itemPrice < 0 { itemPrice = 0 }
 		
+		// Kalkulasi potongan untuk menu promo (Diperbarui)
 		if product.VoucherID != nil && product.Voucher != nil && product.Voucher.IsActive && product.Voucher.Type == "menu_promo" {
-			if product.Voucher.DiscountType == "percentage" {
-				itemPrice -= (itemPrice * product.Voucher.DiscountValue) / 100
-			} else {
-				itemPrice -= product.Voucher.DiscountValue
-			}
+			itemPrice -= product.Voucher.DiscountAmount
 		}
 
 		if itemPrice < 0 { itemPrice = 0 }
@@ -199,14 +189,11 @@ func (u *TransactionUsecase) CreateOrder(ctx context.Context, req dto.CreateOrde
 
 	totalDiscountOrder := 0
 	
+	// Kalkulasi potongan untuk cart_discount (Diperbarui)
 	if req.OrderVoucherCode != "" { 
 		orderVoucher, err := u.voucherRepo.GetByCode(ctx, req.OrderVoucherCode)
 		if err == nil && orderVoucher.IsActive && subtotalAmount >= orderVoucher.MinPurchase && orderVoucher.Type == "cart_discount" {
-			if orderVoucher.DiscountType == "percentage" {
-				totalDiscountOrder = (subtotalAmount * orderVoucher.DiscountValue) / 100
-			} else {
-				totalDiscountOrder = orderVoucher.DiscountValue
-			}
+			totalDiscountOrder = orderVoucher.DiscountAmount
 		}
 	}
 	
@@ -242,14 +229,12 @@ func (u *TransactionUsecase) CreateOrder(ctx context.Context, req dto.CreateOrde
 
 	var earnToken string
 	if !req.IsRedeem {
-		// Hitung total quantity dari order items
 		totalQty := 0
 		for _, item := range req.Items {
 			totalQty += item.Quantity
 		}
 
 		earnToken = uuid.New().String()
-		// Titipkan orderID, finalAmount, dan totalQty ke Redis dipisah tanda |
 		redisData := fmt.Sprintf("%s|%d|%d", orderID.String(), finalAmount, totalQty)
 		_ = u.redisRepo.SaveQRToken(ctx, "earn_qr", earnToken, redisData, 10*time.Minute)
 	}
@@ -274,13 +259,12 @@ func (u *TransactionUsecase) ScanEarnQR(ctx context.Context, userIDStr string, r
 	redisData, err := u.redisRepo.GetQRTokenData(ctx, "earn_qr", req.EarnToken)
 	if err != nil { return errors.New("QR code expired or invalid") }
 
-	// Pecah data dari Redis (orderID | finalAmount | totalQty)
 	parts := strings.Split(redisData, "|")
 	pointsEarned := 0
 	if len(parts) >= 3 {
-		pointsEarned, _ = strconv.Atoi(parts[2]) // Jadikan totalQty sebagai Poin
+		pointsEarned, _ = strconv.Atoi(parts[2]) 
 	} else {
-		pointsEarned = 1 // Fallback jaga-jaga kalau error
+		pointsEarned = 1 
 	}
 	
 	err = u.txRepo.UpdateUserPoints(ctx, userID, pointsEarned, true)

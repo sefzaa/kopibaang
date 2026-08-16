@@ -39,14 +39,14 @@ func (u *VoucherUsecase) CreateVoucher(ctx context.Context, req dto.VoucherReque
 	}
 
 	voucher := &entity.Voucher{
-		ID:            uuid.New(),
-		Code:          req.Code,
-		Type:          req.Type, // Disimpan ke DB
-		DiscountValue: req.DiscountAmount,
-		MinPurchase:   req.MinPurchase,
-		IsActive:      *req.IsActive,
-		StartDate:     startDate,
-		EndDate:       endDate,
+		ID:             uuid.New(),
+		Code:           req.Code,
+		Type:           req.Type, 
+		DiscountAmount: req.DiscountAmount, // PERBAIKAN: Disesuaikan dengan Entity
+		MinPurchase:    req.MinPurchase,
+		IsActive:       *req.IsActive,
+		StartDate:      startDate,
+		EndDate:        endDate,
 	}
 
 	err = u.voucherRepo.Create(ctx, voucher)
@@ -78,8 +78,8 @@ func (u *VoucherUsecase) UpdateVoucher(ctx context.Context, id string, req dto.V
 	if err != nil { return errors.New("invalid end_date format") }
 
 	existing.Code = req.Code
-	existing.Type = req.Type // Update Tipe
-	existing.DiscountValue = req.DiscountAmount
+	existing.Type = req.Type 
+	existing.DiscountAmount = req.DiscountAmount // PERBAIKAN: Disesuaikan dengan Entity
 	existing.MinPurchase = req.MinPurchase
 	existing.IsActive = *req.IsActive
 	existing.StartDate = startDate
@@ -103,8 +103,8 @@ func (u *VoucherUsecase) GetAllVouchers(ctx context.Context) ([]dto.VoucherRespo
 		responses = append(responses, dto.VoucherResponse{
 			ID:             v.ID.String(),
 			Code:           v.Code,
-			Type:           v.Type, // Keluarkan ke response
-			DiscountAmount: v.DiscountValue,
+			Type:           v.Type, 
+			DiscountAmount: v.DiscountAmount, // PERBAIKAN: Disesuaikan dengan Entity
 			MinPurchase:    v.MinPurchase,
 			IsActive:       v.IsActive,
 			StartDate:      v.StartDate.Format("2006-01-02"),

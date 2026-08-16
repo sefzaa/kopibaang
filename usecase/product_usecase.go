@@ -21,31 +21,26 @@ import (
 type ProductUsecase struct {
 	productRepo domain.ProductRepository
 	fcmClient   *messaging.Client
-	minioClient *minio.Client // TAMBAHAN
-	env         *bootstrap.Env // TAMBAHAN
+	minioClient *minio.Client 
+	env         *bootstrap.Env 
 }
 
-// Constructor Diubah
 func NewProductUsecase(productRepo domain.ProductRepository, fcmClient *messaging.Client, minioClient *minio.Client, env *bootstrap.Env) *ProductUsecase {
 	return &ProductUsecase{productRepo, fcmClient, minioClient, env}
 }
 
-// Fungsi Upload Sakti ke MinIO
 func (u *ProductUsecase) UploadImageToMinIO(ctx context.Context, fileHeader *multipart.FileHeader) (string, error) {
 	bucketName := u.env.MinioBucketName
 
-	// 1. Buka File Fisik
 	file, err := fileHeader.Open()
 	if err != nil {
 		return "", err
 	}
 	defer file.Close()
 
-	// 2. Buat Nama Unik (UUID + Ekstensi Asli)
 	ext := filepath.Ext(fileHeader.Filename)
 	objectName := fmt.Sprintf("menu/%s-%d%s", uuid.New().String(), time.Now().Unix(), ext)
 
-// 3. Eksekusi Upload ke MinIO
 	contentType := fileHeader.Header.Get("Content-Type")
 	if contentType == "" {
 		contentType = "application/octet-stream"
@@ -58,14 +53,6 @@ func (u *ProductUsecase) UploadImageToMinIO(ctx context.Context, fileHeader *mul
 		return "", fmt.Errorf("gagal upload ke MinIO: %v", err)
 	}
 
-	// 4. Bangun Publik URL
-	// HAPUS ATAU COMMENT BLOK PROTOCOL DI BAWAH INI:
-	// protocol := "http"
-	// if u.env.MinioUseSSL == "true" {
-	// 	protocol = "https"
-	// }
-	
-	// CUKUP TINGGALKAN BARIS INI SAJA:
 	publicURL := fmt.Sprintf("http://72.60.198.166:9005/%s/%s", bucketName, objectName)
 	
 	return publicURL, nil
@@ -99,7 +86,7 @@ func (u *ProductUsecase) CreateMenu(ctx context.Context, req dto.ProductRequest)
 		Discount:    req.Discount,
 		VoucherID:   voucherUUID,
 		Volume:      req.Volume,
-		ImageURLs:   req.ImageURLs, // Array of strings untuk multiple images
+		ImageURLs:   req.ImageURLs, 
 		IsActive:    *req.IsActive,
 		Ingredients: ingredients,
 	}
@@ -109,7 +96,6 @@ func (u *ProductUsecase) CreateMenu(ctx context.Context, req dto.ProductRequest)
 		return err
 	}
 
-	// TRIGGER NOTIFIKASI FCM JIKA MENU AKTIF
 	if *req.IsActive && u.fcmClient != nil {
 		fcmutils.SendToTopic(u.fcmClient, "all_users", "Menu Baru: "+req.Name+" 🎉", "Cek aplikasi sekarang buat cobain menu baru kita!")
 	}
@@ -154,7 +140,6 @@ func (u *ProductUsecase) UpdateMenu(ctx context.Context, productID string, req d
 	return u.productRepo.Update(ctx, existing)
 }
 
-// Archive / Unarchive Menu (Toggle IsActive)
 func (u *ProductUsecase) ToggleMenuStatus(ctx context.Context, productID string) error {
 	id, err := uuid.Parse(productID)
 	if err != nil { return errors.New("invalid product ID format") }
@@ -162,7 +147,7 @@ func (u *ProductUsecase) ToggleMenuStatus(ctx context.Context, productID string)
 	existing, err := u.productRepo.GetByID(ctx, id)
 	if err != nil { return errors.New("product not found") }
 
-	existing.IsActive = !existing.IsActive // Balikkan statusnya
+	existing.IsActive = !existing.IsActive 
 	return u.productRepo.Update(ctx, existing)
 }
 
@@ -173,7 +158,6 @@ func (u *ProductUsecase) DeleteMenu(ctx context.Context, productID string) error
 }
 
 func (u *ProductUsecase) GetMenus(ctx context.Context, role string) ([]dto.ProductResponse, error) {
-	// Admin (barista) melihat semua menu (termasuk yang archive). Customer HANYA melihat yang active.
 	onlyActive := role == "customer"
 	
 	products, err := u.productRepo.GetAll(ctx, onlyActive)
@@ -203,7 +187,6 @@ func (u *ProductUsecase) GetMenuByID(ctx context.Context, productID string, role
 	return &resp, nil
 }
 
-// Helper Mapping dengan kalkulasi voucher persentase & nominal
 func mapProductToResponse(p entity.Product) dto.ProductResponse {
 	var ings []dto.IngredientResponse
 	for _, i := range p.Ingredients {
@@ -221,17 +204,14 @@ func mapProductToResponse(p entity.Product) dto.ProductResponse {
 	itemPrice := p.Price - p.Discount
 	if itemPrice < 0 { itemPrice = 0 }
 	
-	// Kalkulasi Voucher Khusus Menu
+	// Kalkulasi Voucher Khusus Menu (Diperbarui)
 	if p.VoucherID != nil && p.Voucher != nil && p.Voucher.IsActive {
 		vid := p.VoucherID.String()
 		voucherIDStr = &vid
 		voucherCode = p.Voucher.Code
 		
-		if p.Voucher.DiscountType == "percentage" {
-			voucherDiscountAmount = (itemPrice * p.Voucher.DiscountValue) / 100
-		} else {
-			voucherDiscountAmount = p.Voucher.DiscountValue
-		}
+		// Langsung ambil potongan harga
+		voucherDiscountAmount = p.Voucher.DiscountAmount
 	}
 
 	finalPrice := itemPrice - voucherDiscountAmount
